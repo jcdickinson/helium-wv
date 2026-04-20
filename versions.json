@@ -1,0 +1,15 @@
+{
+  "versions": {
+    "linux": "0.11.3.2"
+  },
+  "srcs": {
+    "x86_64-linux": {
+      "url": "https://github.com/imputnet/helium-linux/releases/download/0.11.3.2/helium-0.11.3.2-x86_64_linux.tar.xz",
+      "hash": "sha256-DMgy1NH2+huzDGySlCqNpgj7JnLt4OtgUeCjxMCWvFs="
+    },
+    "aarch64-linux": {
+      "url": "https://github.com/imputnet/helium-linux/releases/download/0.11.3.2/helium-0.11.3.2-arm64_linux.tar.xz",
+      "hash": "sha256-p9wiuaKtQAHAL4xDFSpuh43mf5+0y4pkWW5trKFMsdw="
+    }
+  }
+}

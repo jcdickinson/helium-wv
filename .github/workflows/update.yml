@@ -1,0 +1,101 @@
+name: Update Helium
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-helium
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      CACHIX_CACHE: ${{ vars.CACHIX_CACHE }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: main
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Configure Cachix
+        uses: cachix/cachix-action@v17
+        with:
+          name: ${{ vars.CACHIX_CACHE }}
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipPush: true
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Capture current version
+        id: before
+        run: |
+          echo "version=$(jq -r '.versions.linux' versions.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Update versions and flake inputs
+        run: ./update.sh
+
+      - name: Check for version change
+        run: |
+          version="$(jq -r '.versions.linux' versions.json)"
+          old_version="${{ steps.before.outputs.version }}"
+
+          if [ "$version" = "$old_version" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=helium-$version" >> "$GITHUB_OUTPUT"
+        id: prep
+
+      - name: Update flake inputs
+        if: steps.prep.outputs.changed == 'true'
+        run: |
+          nix flake update
+
+      - name: Commit update
+        if: steps.prep.outputs.changed == 'true'
+        run: |
+          git add versions.json flake.lock
+          git commit -m "Update Helium to ${{ steps.prep.outputs.version }}"
+
+      - name: Create tag
+        if: steps.prep.outputs.changed == 'true'
+        run: |
+          if git rev-parse -q --verify "refs/tags/${{ steps.prep.outputs.tag }}" >/dev/null; then
+            echo "tag already exists: ${{ steps.prep.outputs.tag }}" >&2
+            exit 1
+          fi
+
+          git tag -a "${{ steps.prep.outputs.tag }}" -m "Helium ${{ steps.prep.outputs.version }}"
+
+      - name: Build flake
+        if: steps.prep.outputs.changed == 'true'
+        run: |
+          nix build .#packages.x86_64-linux.helium
+
+      - name: Push build to Cachix
+        if: steps.prep.outputs.changed == 'true'
+        run: |
+          cachix push "$CACHIX_CACHE" "$(readlink -f ./result)"
+
+      - name: Push commit and tags
+        if: steps.prep.outputs.changed == 'true'
+        run: |
+          git push origin HEAD:main --follow-tags
