@@ -1,15 +1,15 @@
 {
   "versions": {
-    "linux": "0.15.7.1"
+    "linux": "0.16.1.1"
   },
   "srcs": {
     "x86_64-linux": {
-      "url": "https://github.com/imputnet/helium-linux/releases/download/0.15.7.1/helium-0.15.7.1-x86_64_linux.tar.xz",
-      "hash": "sha256-MQKJLN69/g1R46Y44ADo1UvKAXxS2vKsq/XlAwBO+58="
+      "url": "https://github.com/imputnet/helium-linux/releases/download/0.16.1.1/helium-0.16.1.1-x86_64_linux.tar.xz",
+      "hash": "sha256-u1L7/oXmST24AWEtrSiJDUwd7bm7fqp1gDj17kLWZuE="
     },
     "aarch64-linux": {
-      "url": "https://github.com/imputnet/helium-linux/releases/download/0.15.7.1/helium-0.15.7.1-arm64_linux.tar.xz",
-      "hash": "sha256-CYHUDYEMwe+2//4cDPMS2VqcRfbRJD0USDxDJ7kKu6Q="
+      "url": "https://github.com/imputnet/helium-linux/releases/download/0.16.1.1/helium-0.16.1.1-arm64_linux.tar.xz",
+      "hash": "sha256-3nV7OqGUwONcRlwbBaTvQEaM6UlPtN3CHtyG9zpbSIQ="
     }
   }
 }
